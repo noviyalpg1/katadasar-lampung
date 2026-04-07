@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Puzzle Bahasa Lampung</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
+
+        /* =========================================
+           CSS VARIABLES & GLOBAL RESET
+           ========================================= */
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --bg-sky: #E1F5FE;
+            --danger: #F44336;
+            --warning: #FFC107;
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #333;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: manipulation;
+        }
+
+        /* =========================================
+           MENUS (MAIN MENU & IMAGE SELECTION)
+           ========================================= */
+        .fullscreen-menu {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--bg-sky), #B3E5FC);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .fullscreen-menu.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1.1);
+        }
+
+        .title-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .game-title {
+            font-family: 'Fredoka One', 'Segoe UI', cursive, sans-serif;
+            font-size: 3rem;
+            color: var(--primary-dark);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .game-logo {
+            max-width: 90vw;
+            max-height: 200px;
+            margin-bottom: 15px;
+            filter: drop-shadow(0px 6px 10px rgba(0,0,0,0.2));
+        }
+
+        .game-subtitle {
+            font-size: 1.2rem;
+            color: #555;
+            background: rgba(255,255,255,0.7);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        /* --- CREATOR & SOCIAL MEDIA --- */
+        .creator-info {
+            margin-top: 10px;
+            text-align: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .creator-text {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+        .social-links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .social-icon svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+        .social-icon.ig:hover { background-color: #fce7f3; color: #db2777; border-color: #fce7f3; }
+        .social-icon.tt:hover { background-color: #dbeafe; color: #3b82f6; border-color: #dbeafe; }
+        .social-icon.fb:hover { background-color: #e0e7ff; color: #4f46e5; border-color: #e0e7ff; }
+        .social-icon.yt:hover { background-color: #fee2e2; color: #dc2626; border-color: #fee2e2; }
+
+        /* --- NEW MAIN MENU LAYOUT --- */
+        .main-menu-layout {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 1100px;
+            padding: 20px;
+            gap: 50px;
+        }
+
+        .main-left {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .main-right {
+            flex: 1.2;
+            display: flex;
+            justify-content: center;
+        }
+
+        .game-logo-large {
+            width: 100%;
+            max-width: 600px; /* Ukuran Logo jauh lebih besar */
+            filter: drop-shadow(0px 10px 20px rgba(0,0,0,0.3));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .mode-buttons-col {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @media (max-width: 768px) {
+            .main-menu-layout {
+                flex-direction: column-reverse; /* Di HP: Logo di atas, Tombol di bawah */
+                gap: 30px;
+            }
+            .game-logo-large {
+                max-width: 350px;
+            }
+        }
+        /* ---------------------------- */
+
+        .mode-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 600px;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 var(--primary-dark);
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn:active { transform: translateY(5px); box-shadow: 0 0 0 var(--primary-dark); }
+        .btn-mode-solo { background-color: #4CAF50; box-shadow: 0 5px 0 #388E3C; }
+        .btn-mode-duel { background-color: #FF9800; box-shadow: 0 5px 0 #F57C00; }
+        .btn-mode-squad { background-color: #9C27B0; box-shadow: 0 5px 0 #7B1FA2; }
+        .btn-secondary { background-color: #757575; box-shadow: 0 5px 0 #424242; margin-top: 20px;}
+
+        /* Image Selection Grid */
+        .image-grid {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .img-option {
+            width: 400px;
+            max-width: 90vw;
+            aspect-ratio: 2 / 1;
+            border: 4px solid white;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .img-option:hover { transform: scale(1.05); border-color: var(--primary); }
+        .img-option-title {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            text-align: center;
+            font-size: 1.2rem;
+            padding: 8px 0;
+            font-weight: bold;
+        }
+
+        /* Global Controls (Top Right) */
+        #global-controls {
+            position: absolute; top: 10px; right: 10px; z-index: 101;
+            display: flex; gap: 10px;
+        }
+
+        .icon-btn {
+            background: rgba(255,255,255,0.8); border: none; border-radius: 50%;
+            width: 45px; height: 45px; font-size: 1.5rem; cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* =========================================
+           GAME CONTAINER & GRID (RESPONSIVE)
+           ========================================= */
+        #game-container {
+            width: 100%; height: 100%; display: none;
+            background: #222; gap: 4px; padding: 4px;
+        }
+
+        #game-container.mode-solo { display: block; }
+        #game-container.mode-duel { display: grid; grid-template-columns: 1fr 1fr; }
+        #game-container.mode-squad { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr; }
+
+        @media (max-aspect-ratio: 3/4) {
+            #game-container.mode-duel { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+            #game-container.mode-squad { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+            #game-container.mode-squad .answers-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        /* =========================================
+           PLAYER BOARD & PUZZLE UI
+           ========================================= */
+        .player-board {
+            position: relative;
+            background: white;
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            overflow: hidden; border-radius: 8px;
+        }
+
+        /* Puzzle Container */
+        .puzzle-area {
+            flex: 1;
+            background: radial-gradient(circle, #ece9e6, #ffffff);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            position: relative;
+        }
+
+        /* Papan Puzzle (Bayangan) */
+        .puzzle-board {
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 2 / 1; /* Sesuai rasio gambar 800x400 */
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            border: 3px solid #757575;
+            background: #e0e0e0;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+        /* Kepingan Bayangan */
+        .puzzle-piece {
+            position: relative;
+            border: 1px dashed rgba(0,0,0,0.15);
+            background: rgba(0,0,0,0.05); /* Warna bayangan */
+        }
+
+        /* Gambar Asli Kepingan */
+        .piece-img {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-size: 500% 200%; /* Karena 5 kolom 2 baris */
+            background-repeat: no-repeat;
+            opacity: 0; /* Sembunyikan awalnya */
+            transform: scale(0.5);
+            transition: opacity 0.5s, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .puzzle-piece.revealed .piece-img {
+            opacity: 1;
+            transform: scale(1); /* Efek pop-in menempati tempatnya */
+        }
+
+        /* Area Pertanyaan & Kontrol */
+        .controls-area {
+            background: white;
+            padding: 10px;
+            display: flex; flex-direction: column; gap: 10px;
+            border-top: 3px solid #eee;
+            z-index: 10;
+        }
+
+        .question-display {
+            text-align: center;
+            font-size: 2rem; font-weight: bold; color: #333;
+            background: #f9f9f9; padding: 10px;
+            border-radius: 8px; border: 2px dashed #ccc;
+        }
+
+        .answers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+        .ans-btn {
+            background: #f0f0f0; border: 2px solid #ddd;
+            padding: 15px; font-size: 1.2rem; font-weight: bold;
+            border-radius: 8px; cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .ans-btn:active { transform: scale(0.95); }
+        .ans-btn.correct { background: var(--primary); color: white; border-color: var(--primary-dark); }
+        .ans-btn.wrong { background: var(--danger); color: white; border-color: darkred; }
+
+        /* Progress Bar (sebagai ganti timer) */
+        .progress-bar-container { height: 8px; width: 100%; background: #ddd; }
+        .progress-bar { height: 100%; width: 0%; background: var(--primary); transition: width 0.3s ease; }
+
+        /* Player Header (Bawah) */
+        .player-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 15px; background: white; border-top: 2px solid #eee; z-index: 10;
+        }
+
+        .player-name { font-weight: bold; color: var(--primary-dark); }
+        .score-box { font-weight: bold; font-size: 1.1rem; color: #333; }
+        
+        /* Win Overlay */
+        .win-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 20; opacity: 0; pointer-events: none; transition: opacity 0.5s;
+        }
+
+        .win-screen.show { opacity: 1; pointer-events: all; }
+        .win-screen h2 { font-size: 2.5rem; color: var(--primary-dark); margin-bottom: 10px; text-align: center; }
+        .win-screen .full-image-preview {
+            width: 80%; max-width: 400px; aspect-ratio: 2/1;
+            background-size: cover; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        /* Responsive Tweaks */
+        #game-container.mode-squad .player-header { padding: 4px; flex-direction: column; justify-content: center; gap: 2px; }
+        #game-container.mode-squad .player-name { font-size: 0.9rem; }
+        #game-container.mode-squad .score-box { font-size: 0.8rem; }
+        #game-container.mode-squad .question-display { font-size: 1rem; padding: 5px; }
+        #game-container.mode-squad .answers-grid { grid-template-columns: 1fr; gap: 4px; }
+        #game-container.mode-squad .ans-btn { font-size: 0.8rem; padding: 8px 4px; }
+        
+        @media (max-width: 600px) {
+            .game-title { font-size: 2rem; }
+            .ans-btn { padding: 8px; font-size: 1rem; }
+            .question-display { font-size: 1.2rem; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Global Controls -->
+    <div id="global-controls">
+        <button class="icon-btn" id="btn-audio" title="Mute/Unmute">🔊</button>
+        <button class="icon-btn" id="btn-fullscreen" title="Layar Penuh">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
+                <path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+                <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
+                <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+            </svg>
+        </button>
+        <button class="icon-btn" id="btn-home" style="display:none;" title="Kembali ke Menu">🏠</button>
+    </div>
+
+    <!-- MAIN MENU: Pilih Mode -->
+    <div id="main-menu" class="fullscreen-menu">
+        <div class="main-menu-layout">
+            <!-- Bagian Kiri: Tombol Mode -->
+            <div class="main-left">
+                <span class="game-subtitle">Pilih Mode Game Kamu</span>
+                <div class="mode-buttons-col">
+                    <button class="btn btn-mode-solo" onclick="selectMode('solo')">👤 Solo Mode (1P)</button>
+                    <button class="btn btn-mode-duel" onclick="selectMode('duel')">⚔️ Duel Mode (2P)</button>
+                    <button class="btn btn-mode-squad" onclick="selectMode('squad')">👥 Squad Mode (4P)</button>
+                </div>
+                
+                <!-- Profil Pembuat & Sosial Media -->
+                <div class="creator-info">
+                    <div class="creator-text">Karya : Noviyalpg</div>
+                    <div class="social-links">
+                        <a href="https://s.id/ig-noviyalpg" target="_blank" class="social-icon ig" title="Instagram">
+                            <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                        </a>
+                        <a href="https://www.tiktok.com/@noviya.lpg?_t=ZS-8tafgg6Eeyl&amp;_r=1" target="_blank" class="social-icon tt" title="TikTok">
+                            <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/></svg>
+                        </a>
+                        <a href="https://www.facebook.com/noviyalpg/" target="_blank" class="social-icon fb" title="Facebook">
+                            <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        </a>
+                        <a href="https://s.id/youtube-noviyalpg" target="_blank" class="social-icon yt" title="YouTube">
+                            <svg viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bagian Kanan: Logo Besar -->
+            <div class="main-right">
+                <img src="https://i.imgur.com/G5JRyVt.png" alt="Logo Game" class="game-logo-large">
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN MENU: Pilih Gambar -->
+    <div id="image-menu" class="fullscreen-menu hidden">
+        <div class="title-container" style="margin-bottom: 5px;">
+            <h1 class="game-title" style="font-size: 2.8rem; margin-bottom: 0;">Pilih Gambar Puzzle</h1>
+        </div>
+        <div class="image-grid" id="image-grid-container" style="margin-top: 5px;">
+            <!-- Diisi lewat JS -->
+        </div>
+        <button class="btn btn-secondary" onclick="backToMainMenu()">⬅️ Kembali</button>
+    </div>
+
+    <!-- Game Container -->
+    <div id="game-container"></div>
+
+    <!-- Template for Player Board -->
+    <template id="player-template">
+        <div class="player-board">
+            <div class="puzzle-area">
+                <div class="puzzle-board">
+                    <!-- 10 keping puzzle akan dibuat di sini lewat JS -->
+                </div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar"></div>
+            </div>
+            <div class="controls-area">
+                <div class="question-display">Apa arti "Api"?</div>
+                <div class="answers-grid">
+                    <button class="ans-btn">Air</button>
+                    <button class="ans-btn">Api</button>
+                    <button class="ans-btn">Tanah</button>
+                    <button class="ans-btn">Angin</button>
+                </div>
+            </div>
+            <div class="player-header">
+                <span class="player-name">Player 1</span>
+                <span class="score-box">Puzzle: 0/10</span>
+            </div>
+            <div class="win-screen">
+                <h2>Hebat! 🎉</h2>
+                <div class="full-image-preview"></div>
+                <button class="btn btn-mode-solo btn-retry">Main Lagi</button>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        /**
+         * =========================================
+         * GENERATOR GAMBAR (Data URIs)
+         * =========================================
+         */
+        const PuzzleImages = [
+            { id: 1, name: "Nuwo Sesat", src: `url('https://i.imgur.com/yhyB2Iv.png')` },
+            { id: 2, name: "Jembatan Milenial", src: `url('https://i.imgur.com/anUu1fi.png')` },
+            { id: 3, name: "Siger Lampung", src: `url('https://i.imgur.com/FvHUDHJ.png')` }
+        ];
+
+        /**
+         * =========================================
+         * BANK SOAL BAHASA LAMPUNG
+         * =========================================
+         */
+        const QuestionBank = [
+            { q: 'Apa arti "Api"?', a: 'Api', c: ['Air', 'Api', 'Tanah', 'Angin'] },
+            { q: 'Apa arti "Way"?', a: 'Air', c: ['Api', 'Air', 'Batu', 'Daun'] },
+            { q: 'Apa arti "Tanoh"?', a: 'Tanah', c: ['Tanah', 'Air', 'Api', 'Langit'] },
+            { q: 'Apa arti "Langik"?', a: 'Langit', c: ['Tanah', 'Air', 'Langit', 'Angin'] },
+            { q: 'Apa arti "Angin"?', a: 'Angin', c: ['Api', 'Angin', 'Air', 'Tanah'] },
+            { q: 'Apa arti "Lawok"?', a: 'Laut', c: ['Langit', 'Tanah', 'Laut', 'Batu'] },
+            { q: 'Apa arti "Sipin"?', a: 'Piring', c: ['Kayu', 'Piring', 'Air', 'Gelas'] },
+            { q: 'Apa arti "Kawai"?', a: 'Baju', c: ['Baju', 'Batu', 'Tanah', 'Api'] },
+            { q: 'Apa arti "Bulung"?', a: 'Daun', c: ['Air', 'Api', 'Daun', 'Batu'] },
+            { q: 'Apa arti "Buah"?', a: 'Buah', c: ['Buah', 'Air', 'Api', 'Kayu'] },
+            { q: 'Apa arti "Gunung"?', a: 'Gunung', c: ['Laut', 'Bukit', 'Gunung', 'Sungai'] },
+            { q: 'Apa arti "Labung / Teghai"?', a: 'Hujan', c: ['Panas', 'Air', 'Hujan', 'Awan'] },
+            { q: 'Apa arti "Awan"?', a: 'Awan', c: ['Langit', 'Awan', 'Angin', 'Hujan'] },
+            { q: 'Apa arti "Pasegh"?', a: 'Pasir', c: ['Batu', 'Tanah', 'Pasir', 'Air'] },
+            { q: 'Apa arti "Sabah"?', a: 'Sawah', c: ['Laut', 'Sungai', 'Sawah', 'Air'] },
+            { q: 'Apa arti "Sighing"?', a: 'Siring', c: ['Laut', 'Siring', 'Air', 'Danau'] },
+            { q: 'Apa arti "Hutan"?', a: 'Hutan', c: ['Kebun', 'Hutan', 'Gunung', 'Pohon'] },
+            { q: 'Apa arti "Batang"?', a: 'Pohon', c: ['Kayu', 'Daun', 'Pohon', 'Hutan'] },
+            { q: 'Apa arti "Lamban"?', a: 'Rumah', c: ['Gedung', 'Rumah', 'Sekolah', 'Pondok'] },
+            { q: 'Emak artinya...', a: 'Ibu', c: ['Ayah', 'Ibu', 'Kakak', 'Adik'] },
+            { q: 'Ina artinya...', a: 'Ibu', c: ['Kakak', 'Ibu', 'Nenek', 'Tante'] },
+            { q: 'Temudo artinya...', a: 'Kakak', c: ['Adik', 'Kakak', 'Ayah', 'Paman'] },
+            { q: 'Ading artinya...', a: 'Adik', c: ['Kakak', 'Adik', 'Anak', 'Saudara'] },
+            { q: 'Tamong/Kajong artinya...', a: 'Nenek', c: ['Nenek', 'Ibu', 'Bibi', 'Tante'] },
+            { q: 'Sanak artinya...', a: 'Anak', c: ['Orang tua', 'Anak', 'Leluhur', 'Saudara'] },
+            { q: 'Puaghi artinya...', a: 'Saudara', c: ['Saudara', 'Orang tua', 'Anak', 'Teman'] },
+            { q: 'Ulun artinya...', a: 'Orang Lain', c: ['Teman', 'Orang Lain', 'Tetangga', 'Guru'] },
+            { q: 'Kemaman artinya...', a: 'Paman', c: ['Ayah', 'Paman', 'Kakek', 'Saudara'] },
+            { q: 'Keminan artinya...', a: 'Tante', c: ['Tante', 'Ibu', 'Kakak', 'Adik'] },
+            { q: 'Mata artinya...', a: 'Mata', c: ['Mata', 'Hidung', 'Telinga', 'Mulut'] },
+            { q: 'Cuping artinya...', a: 'Telinga', c: ['Mata', 'Hidung', 'Telinga', 'Mulut'] },
+            { q: 'Ighung artinya...', a: 'Hidung', c: ['Mata', 'Hidung', 'Mulut', 'Telinga'] },
+            { q: 'Banguk artinya...', a: 'Mulut', c: ['Mata', 'Hidung', 'Mulut', 'Telinga'] },
+            { q: 'Culuk artinya...', a: 'Tangan', c: ['Kaki', 'Kepala', 'Tangan', 'Mata'] },
+            { q: 'Cukut artinya...', a: 'Kaki', c: ['Kaki', 'Tangan', 'Kepala', 'Badan'] },
+            { q: 'Ulu artinya...', a: 'Kepala', c: ['Kaki', 'Kepala', 'Tangan', 'Mata'] },
+            { q: 'Buwok artinya...', a: 'Rambut', c: ['Rambut', 'Kepala', 'Mata', 'Kulit'] },
+            { q: 'Kulit artinya...', a: 'Kulit', c: ['Rambut', 'Kulit', 'Tangan', 'Mata'] },
+            { q: 'Tenai/Betong artinya...', a: 'Perut', c: ['Dada', 'Perut', 'Kepala', 'Kaki'] },
+            { q: 'Sai artinya...', a: 'Satu', c: ['Satu', 'Dua', 'Tiga', 'Empat'] },
+            { q: 'Ghua artinya...', a: 'Dua', c: ['Satu', 'Dua', 'Tiga', 'Empat'] },
+            { q: 'Telu artinya...', a: 'Tiga', c: ['Dua', 'Tiga', 'Empat', 'Lima'] },
+            { q: 'Pak artinya...', a: 'Empat', c: ['Tiga', 'Empat', 'Lima', 'Enam'] },
+            { q: 'Lima artinya...', a: 'Lima', c: ['Lima', 'Enam', 'Tujuh', 'Delapan'] },
+            { q: 'Nom artinya...', a: 'Enam', c: ['Lima', 'Enam', 'Tujuh', 'Delapan'] },
+            { q: 'Pitu artinya...', a: 'Tujuh', c: ['Enam', 'Tujuh', 'Delapan', 'Sembilan'] },
+            { q: 'Walu artinya...', a: 'Delapan', c: ['Tujuh', 'Delapan', 'Sembilan', 'Sepuluh'] },
+            { q: 'Siwa artinya...', a: 'Sembilan', c: ['Delapan', 'Sembilan', 'Sepuluh', 'Sebelas'] },
+            { q: 'Puluh artinya...', a: 'Sepuluh', c: ['Sepuluh', 'Sembilan', 'Delapan', 'Tujuh'] },
+            { q: 'Mengan artinya...', a: 'Makan', c: ['Makan', 'Minum', 'Tidur', 'Jalan'] },
+            { q: 'Nginum artinya...', a: 'Minum', c: ['Makan', 'Minum', 'Tidur', 'Duduk'] },
+            { q: 'Tiyuh artinya...', a: 'Tidur', c: ['Tidur', 'Makan', 'Minum', 'Jalan'] },
+            { q: 'Laju artinya...', a: 'Jalan', c: ['Jalan', 'Duduk', 'Lari', 'Diam'] },
+            { q: 'Mejong artinya...', a: 'Duduk', c: ['Berdiri', 'Duduk', 'Jalan', 'Tidur'] },
+            { q: 'Balak artinya...', a: 'Besar', c: ['Besar', 'Kecil', 'Panas', 'Dingin'] },
+            { q: 'Lunik artinya...', a: 'Kecil', c: ['Besar', 'Kecil', 'Cepat', 'Lambat'] },
+            { q: 'Panas artinya...', a: 'Panas', c: ['Panas', 'Dingin', 'Besar', 'Kecil'] },
+            { q: 'Ngison artinya...', a: 'Dingin', c: ['Panas', 'Dingin', 'Cepat', 'Lambat'] },
+            { q: 'Geluk artinya...', a: 'Cepat', c: ['Cepat', 'Lambat', 'Besar', 'Kecil'] },
+            { q: 'Telui artinya...', a: 'Telur', c: ['Cepat', 'Telur', 'Panas', 'Dingin'] },
+            { q: 'Langgagh artinya...', a: 'Tinggi', c: ['Tinggi', 'Rendah', 'Besar', 'Kecil'] },
+            { q: 'Dibah artinya...', a: 'Di bawah', c: ['Tinggi', 'Di bawah', 'Di atas', 'Lambat'] },
+            { q: 'Luwot artinya...', a: 'Lagi', c: ['Lama', 'Lagi', 'Ingin', 'Besar'] },
+            { q: 'Saka artinya...', a: 'Lama', c: ['Baru', 'Lama', 'Cepat', 'Kecil'] }
+        ];
+
+        const LanguageGen = {
+            generate() {
+                const randomIndex = Math.floor(Math.random() * QuestionBank.length);
+                const selectedItem = QuestionBank[randomIndex];
+                const shuffledChoices = [...selectedItem.c].sort(() => Math.random() - 0.5);
+                return { question: selectedItem.q, answer: selectedItem.a, choices: shuffledChoices };
+            }
+        };
+
+        /**
+         * =========================================
+         * AUDIO SYNTHESIZER & BGM
+         * =========================================
+         */
+        const AudioSys = {
+            ctx: null, muted: false,
+            bgm: new Audio('http://googleusercontent.com/file_content/1'),
+            bgmStarted: false,
+            init() {
+                if (!this.ctx) { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                
+                // Memulai BGM saat interaksi pertama
+                if (!this.bgmStarted) {
+                    this.bgm.loop = true;
+                    this.bgm.volume = 0.3; // Mengatur volume agar tidak terlalu keras
+                    this.bgm.play().catch(e => console.log("Audio autoplay prevented", e));
+                    this.bgmStarted = true;
+                }
+            },
+            toggleMute() {
+                this.muted = !this.muted;
+                this.bgm.muted = this.muted;
+                return this.muted;
+            },
+            playTone(freq, type, duration, vol=0.1) {
+                if (this.muted || !this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                osc.connect(gain); gain.connect(this.ctx.destination);
+                osc.start(); osc.stop(this.ctx.currentTime + duration);
+            },
+            sfxPieceSnap() { 
+                this.playTone(600, 'sine', 0.1, 0.1); 
+                setTimeout(() => this.playTone(800, 'sine', 0.15, 0.1), 50);
+            },
+            sfxWrong() { this.playTone(150, 'sawtooth', 0.3, 0.2); },
+            sfxWin() {
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                    setTimeout(() => this.playTone(freq, 'triangle', 0.3, 0.1), i * 150);
+                });
+            }
+        };
+
+        /**
+         * =========================================
+         * KELAS PEMAIN (PUZZLE LOGIC)
+         * =========================================
+         */
+        class Player {
+            constructor(id, name, container, colorTheme, selectedPuzzleImg) {
+                this.id = id;
+                this.name = name;
+                this.correctCount = 0;
+                this.totalPieces = 10;
+                this.isGameOver = false;
+                this.puzzleImageSrc = selectedPuzzleImg;
+
+                // Setup DOM
+                const template = document.getElementById('player-template');
+                const clone = template.content.cloneNode(true);
+                this.board = clone.querySelector('.player-board');
+                
+                this.board.style.border = `4px solid ${colorTheme}`;
+                this.board.querySelector('.player-name').style.color = colorTheme;
+                this.board.querySelector('.player-name').innerText = name;
+                container.appendChild(this.board);
+
+                // Referensi Elemen
+                this.elScore = this.board.querySelector('.score-box');
+                this.elQuestion = this.board.querySelector('.question-display');
+                this.elBtns = Array.from(this.board.querySelectorAll('.ans-btn'));
+                this.elPuzzleBoard = this.board.querySelector('.puzzle-board');
+                this.elProgressBar = this.board.querySelector('.progress-bar');
+                this.elWinScreen = this.board.querySelector('.win-screen');
+
+                // Events
+                this.elBtns.forEach(btn => {
+                    btn.addEventListener('mousedown', (e) => this.handleAnswer(e.target));
+                    btn.addEventListener('touchstart', (e) => { e.preventDefault(); this.handleAnswer(e.target); }, {passive: false});
+                });
+                this.board.querySelector('.btn-retry').addEventListener('click', () => {
+                    this.resetGame();
+                });
+
+                this.initPuzzlePieces();
+                this.startRound();
+            }
+
+            initPuzzlePieces() {
+                this.elPuzzleBoard.innerHTML = '';
+                // Setup kepingan grid (5 kolom x 2 baris = 10 keping)
+                for (let i = 0; i < this.totalPieces; i++) {
+                    const col = i % 5;
+                    const row = Math.floor(i / 5);
+                    
+                    const piece = document.createElement('div');
+                    piece.className = 'puzzle-piece';
+                    
+                    const imgLayer = document.createElement('div');
+                    imgLayer.className = 'piece-img';
+                    imgLayer.style.backgroundImage = this.puzzleImageSrc;
+                    
+                    // Kalkulasi posisi background berdasarkan grid
+                    const posX = (col / 4) * 100; // 0, 25, 50, 75, 100%
+                    const posY = (row / 1) * 100; // 0, 100%
+                    imgLayer.style.backgroundPosition = `${posX}% ${posY}%`;
+                    
+                    piece.appendChild(imgLayer);
+                    this.elPuzzleBoard.appendChild(piece);
+                }
+            }
+
+            startRound() {
+                if (this.isGameOver) return;
+                
+                this.elBtns.forEach(b => {
+                    b.className = 'ans-btn';
+                    b.disabled = false;
+                });
+
+                this.currentQuestion = LanguageGen.generate();
+                this.elQuestion.innerText = this.currentQuestion.question;
+                
+                this.elBtns.forEach((btn, idx) => {
+                    btn.innerText = this.currentQuestion.choices[idx];
+                });
+            }
+
+            handleAnswer(btn) {
+                if (this.isGameOver || btn.disabled) return;
+                this.elBtns.forEach(b => b.disabled = true);
+                
+                const selectedAns = btn.innerText;
+                if (selectedAns === this.currentQuestion.answer) {
+                    btn.classList.add('correct');
+                    this.triggerCorrect();
+                } else {
+                    btn.classList.add('wrong');
+                    this.elBtns.forEach(b => {
+                        if(b.innerText === this.currentQuestion.answer) b.classList.add('correct');
+                    });
+                    this.triggerWrong();
+                }
+            }
+
+            triggerCorrect() {
+                AudioSys.sfxPieceSnap();
+                
+                // Buka 1 keping puzzle
+                const pieces = this.elPuzzleBoard.querySelectorAll('.puzzle-piece');
+                if (this.correctCount < this.totalPieces) {
+                    pieces[this.correctCount].classList.add('revealed');
+                    this.correctCount++;
+                }
+
+                // Update UI
+                this.elScore.innerText = `Puzzle: ${this.correctCount}/${this.totalPieces}`;
+                this.elProgressBar.style.width = `${(this.correctCount / this.totalPieces) * 100}%`;
+
+                if (this.correctCount >= this.totalPieces) {
+                    setTimeout(() => this.triggerWin(), 600);
+                } else {
+                    setTimeout(() => this.startRound(), 800);
+                }
+            }
+
+            triggerWrong() {
+                AudioSys.sfxWrong();
+                // Jika salah, tetap tunjukkan jawaban benar sebentar, lalu lanjut soal baru (tidak dapat puzzle)
+                setTimeout(() => this.startRound(), 1500);
+            }
+
+            triggerWin() {
+                this.isGameOver = true;
+                AudioSys.sfxWin();
+                
+                const imgPreview = this.elWinScreen.querySelector('.full-image-preview');
+                imgPreview.style.backgroundImage = this.puzzleImageSrc;
+                this.elWinScreen.classList.add('show');
+            }
+
+            resetGame() {
+                this.isGameOver = false;
+                this.correctCount = 0;
+                this.elScore.innerText = `Puzzle: 0/${this.totalPieces}`;
+                this.elProgressBar.style.width = `0%`;
+                this.elWinScreen.classList.remove('show');
+                
+                // Tutup semua puzzle
+                const pieces = this.elPuzzleBoard.querySelectorAll('.puzzle-piece');
+                pieces.forEach(p => p.classList.remove('revealed'));
+
+                this.startRound();
+            }
+
+            destroy() {
+                this.board.remove();
+            }
+        }
+
+        /**
+         * =========================================
+         * APP CONTROLLER (Global Logic)
+         * =========================================
+         */
+        let players = [];
+        let pendingMode = '';
+        let chosenImageSrc = '';
+
+        const elMainMenu = document.getElementById('main-menu');
+        const elImageMenu = document.getElementById('image-menu');
+        const elGameContainer = document.getElementById('game-container');
+        const btnHome = document.getElementById('btn-home');
+        const btnAudio = document.getElementById('btn-audio');
+        const btnFullscreen = document.getElementById('btn-fullscreen');
+
+        const COLORS = ['#4CAF50', '#FF9800', '#9C27B0', '#E91E63'];
+
+        // Init Image Menu Grid
+        const gridContainer = document.getElementById('image-grid-container');
+        PuzzleImages.forEach(img => {
+            const div = document.createElement('div');
+            div.className = 'img-option';
+            div.style.backgroundImage = img.src;
+            div.onclick = () => startGameWithImage(img.src);
+            
+            const title = document.createElement('div');
+            title.className = 'img-option-title';
+            title.innerText = img.name;
+            
+            div.appendChild(title);
+            gridContainer.appendChild(div);
+        });
+
+        function selectMode(mode) {
+            AudioSys.init();
+            pendingMode = mode;
+            elMainMenu.classList.add('hidden');
+            elImageMenu.classList.remove('hidden');
+        }
+
+        function backToMainMenu() {
+            elImageMenu.classList.add('hidden');
+            elMainMenu.classList.remove('hidden');
+        }
+
+        function startGameWithImage(imgSrc) {
+            chosenImageSrc = imgSrc;
+            elImageMenu.classList.add('hidden');
+            
+            elGameContainer.style.display = 'grid'; // atau block
+            elGameContainer.className = `mode-${pendingMode}`;
+            btnHome.style.display = 'block';
+
+            players.forEach(p => p.destroy());
+            players = [];
+            elGameContainer.innerHTML = '';
+
+            let playerCount = pendingMode === 'solo' ? 1 : pendingMode === 'duel' ? 2 : 4;
+            
+            for (let i = 0; i < playerCount; i++) {
+                let name = playerCount === 1 ? 'Pemain' : `Player ${i+1}`;
+                players.push(new Player(i, name, elGameContainer, COLORS[i], chosenImageSrc));
+            }
+        }
+
+        function returnToMenu() {
+            players.forEach(p => p.destroy());
+            players = [];
+            elGameContainer.style.display = 'none';
+            elMainMenu.classList.remove('hidden');
+            btnHome.style.display = 'none';
+        }
+
+        // --- Event Listeners UI Global ---
+        btnHome.addEventListener('click', returnToMenu);
+
+        btnAudio.addEventListener('click', () => {
+            const isMuted = AudioSys.toggleMute();
+            btnAudio.innerText = isMuted ? '🔇' : '🔊';
+            btnAudio.style.opacity = isMuted ? '0.5' : '1';
+        });
+
+        btnFullscreen.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+    </script>
+</body>
+</html>
